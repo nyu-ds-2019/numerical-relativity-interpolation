@@ -25,5 +25,5 @@ class SingleChannelDataset(torch.utils.data.Dataset):
         input_2 = self.input_np[index, 1, :, :, :]
         target = self.target_np[index, 0, :, :, :]
 
-        return torch.tensor(input_1), torch.tensor(input_2), torch.tensor(target)
+        return torch.tensor(input_1).float(), torch.tensor(input_2).float(), torch.tensor(target).float()
 
