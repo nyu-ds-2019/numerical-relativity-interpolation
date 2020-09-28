@@ -11,8 +11,8 @@ class PlaceholderModel(pl.LightningModule):
 
     def __init__(self, hparams, data_path):
         super().__init__()
-        self.encoder = nn.Sequential(nn.Linear(373248, 2048), nn.ReLU(), nn.Linear(2048, 512))
-        self.decoder = nn.Sequential(nn.Linear(512, 2048), nn.ReLU(), nn.Linear(2048, 373248))
+        self.encoder = nn.Sequential(nn.Linear(373248, 10), nn.ReLU(), nn.Linear(10, 3))
+        self.decoder = nn.Sequential(nn.Linear(3, 10), nn.ReLU(), nn.Linear(10, 373248))
 
         self.criterion = nn.MSELoss()
 
@@ -61,7 +61,7 @@ class PlaceholderModel(pl.LightningModule):
 
         loss = self.criterion(y_hat, y)
         # loss = F.mse_loss(y_hat, y)
-        return {'loss': loss}
+        return {'loss': loss, 'log': {'train_step_loss': loss}}
 
     def training_epoch_end(self, outputs):
         # OPTIONAL
