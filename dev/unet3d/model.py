@@ -7,7 +7,11 @@ from torchvision import transforms
 import pytorch_lightning as pl
 from loader import SingleChannelDataset
 
-class PlaceholderModel(pl.LightningModule):
+from UNet import get_model
+from utils import get_number_of_learnable_parameters
+from config import load_config
+
+class UNetModel(pl.LightningModule):
 
     def __init__(self, hparams, data_path):
         super().__init__()
@@ -18,6 +22,10 @@ class PlaceholderModel(pl.LightningModule):
 
         self.hparams = hparams
         self.data_path = data_path
+
+        config = load_config()
+        self.model = get_model(config)
+        # print(self.model)
 
     def prepare_data(self):
 
