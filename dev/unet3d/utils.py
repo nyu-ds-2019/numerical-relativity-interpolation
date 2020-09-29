@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from PIL import Image
-from sklearn.decomposition import PCA
 
 plt.ioff()
 plt.switch_backend('agg')
