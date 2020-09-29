@@ -1,6 +1,7 @@
 import os
 import torch
 from torch import nn
+from torch import optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
@@ -20,6 +21,8 @@ class PlaceholderModel(pl.LightningModule):
 
         self.hparams = hparams
         self.data_path = data_path
+        
+        self.best_loss = 10 ** 6
 
     def prepare_data(self):
 
@@ -30,8 +33,17 @@ class PlaceholderModel(pl.LightningModule):
         self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
+        # REQUIRED
+
+        if self.hparams.lr_type == 'SGD':
+            optimizer = optim.SGD(self.parameters(), lr=self.hparams.lr)
+        elif self.hparams.lr_type == 'Adam':
+            optimizer = optim.Adam(self.parameters(), lr=self.hparams.lr)
+        else:
+            optimizer = optim.Adam(self.parameters(), lr=self.hparams.lr)
+
+        scheduler = optim.lr_scheduler.StepLR(optimizer, self.hparams.scheduler_epoch, self.hparams.scheduler_step_size)
+        return [optimizer], [scheduler]
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=4, pin_memory=True)
@@ -106,7 +118,11 @@ class PlaceholderModel(pl.LightningModule):
             avg_loss /= i
 
         tensorboard_logs = {'val_loss': avg_loss}
-        return {'val_loss': avg_loss, 'log': tensorboard_logs}
+        
+        if avg_loss < self.best_loss:
+            self.best_loss = avg_loss
+            
+        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': {'val_loss' : avg_loss}}
 
     def test_step(self, batch, batch_nb):
         # OPTIONAL
@@ -136,4 +152,5 @@ class PlaceholderModel(pl.LightningModule):
             avg_loss /= i
 
         tensorboard_logs = {'test_loss': avg_loss}
+        
         return {'test_loss': avg_loss, 'log': tensorboard_logs}
