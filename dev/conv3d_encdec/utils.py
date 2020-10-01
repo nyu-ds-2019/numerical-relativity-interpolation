@@ -17,9 +17,8 @@ def generate_video_from_tensor(frame_tensor, save_path):
         all_array.append(np.array(Image.fromarray(b_norm[i], 'L').convert('RGB')))
 
     out = cv2.VideoWriter(
-        # '/Users/nikhilvs/repos/nyu/numerical-relativity-interpolation/notebooks/test_new.avi', 
         save_path,
-        cv2.VideoWriter_fourcc(*'DIVX'), 
+        cv2.VideoWriter_fourcc(*'XVID'), 
         10, 
         (72, 72)
     )
@@ -29,3 +28,22 @@ def generate_video_from_tensor(frame_tensor, save_path):
     out.release()
 
     return
+
+'''
+video_path = '/Users/nikhilvs/repos/nyu/numerical-relativity-interpolation/notebooks/test_new_2.mp4'
+
+generate_video_from_tensor(
+    a[:, 0, :, :, :],
+    video_path
+)
+
+
+from IPython.display import Video
+
+Video(
+    video_path, 
+    embed = True,
+    width = 500,
+    height = 500
+)
+'''
