@@ -134,3 +134,4 @@ data/
 *.DS_Store
 *.avi
 *env.py
+*.mp4
