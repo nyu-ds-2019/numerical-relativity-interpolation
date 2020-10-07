@@ -3,13 +3,31 @@ import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, Dataset
 from torchvision import transforms
 import pytorch_lightning as pl
 from loader import SingleChannelDataset
 
 from model_conv import Encoder
 from model_conv import Decoder
+
+class Subset(Dataset):
+    r"""
+    Subset of a dataset at specified indices.
+
+    Arguments:
+        dataset (Dataset): The whole Dataset
+        indices (sequence): Indices in the whole set selected for subset
+    """
+    def __init__(self, dataset, indices):
+        self.dataset = dataset
+        self.indices = indices
+
+    def __getitem__(self, idx):
+        return self.dataset[self.indices[idx]]
+
+    def __len__(self):
+        return len(self.indices)
 
 class PlaceholderModel(pl.LightningModule):
 
@@ -30,7 +48,13 @@ class PlaceholderModel(pl.LightningModule):
         train_length = int(0.7 * len(dataset))
         val_length = int(0.15 * len(dataset))
         test_length = len(dataset) - train_length - val_length
-        self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
+#         self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
+        
+        self.train_dataset = Subset(dataset, list(range(0, train_length)))
+        self.val_dataset = Subset(dataset, list(range(train_length, train_length+val_length)))
+        self.test_dataset = Subset(dataset, list(range(train_length+val_length, len(dataset))))
+        
+#         print(len(self.train_dataset)), print(len(self.val_dataset)), print(len(self.test_dataset))
 
     def configure_optimizers(self):
         # REQUIRED
