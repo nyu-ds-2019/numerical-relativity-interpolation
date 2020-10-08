@@ -8,8 +8,8 @@ from torchvision import transforms
 import pytorch_lightning as pl
 from loader import SingleChannelDataset
 
-from model_conv import Encoder
-from model_conv import Decoder
+from model_conv_1 import Encoder
+from model_conv_1 import Decoder
 
 class Subset(Dataset):
     r"""
@@ -33,8 +33,8 @@ class PlaceholderModel(pl.LightningModule):
 
     def __init__(self, hparams, data_path):
         super().__init__()
-        self.encoder = Encoder()
-        self.decoder = Decoder()
+        self.encoder = Encoder(5, F.relu)
+        self.decoder = Decoder(5, 72, F.relu)
         self.criterion = nn.MSELoss()
 
         self.hparams = hparams
