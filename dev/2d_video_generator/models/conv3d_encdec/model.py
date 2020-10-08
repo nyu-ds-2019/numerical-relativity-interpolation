@@ -6,10 +6,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split, Dataset
 from torchvision import transforms
 import pytorch_lightning as pl
-from loader import SingleChannelDataset
+from .loader import SingleChannelDataset
 
-from model_conv_1 import Encoder
-from model_conv_1 import Decoder
+from .model_conv_1 import Encoder
+from .model_conv_1 import Decoder
 
 class Subset(Dataset):
     r"""
