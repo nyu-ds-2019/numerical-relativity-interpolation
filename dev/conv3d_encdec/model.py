@@ -33,8 +33,8 @@ class PlaceholderModel(pl.LightningModule):
 
     def __init__(self, hparams, data_path):
         super().__init__()
-        self.encoder = Encoder(8, F.relu)
-        self.decoder = Decoder(8, 72, F.relu)
+        self.encoder = Encoder(5, F.relu)
+        self.decoder = Decoder(5, 72, F.relu)
         self.criterion = nn.MSELoss()
 
         self.hparams = hparams
