@@ -136,3 +136,4 @@ data/
 *env.py
 *.mp4
 *.npy
+core.*
