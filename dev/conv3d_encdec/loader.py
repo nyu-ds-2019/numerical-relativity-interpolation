@@ -12,13 +12,16 @@ import h5py
 class SingleChannelDataset(torch.utils.data.Dataset):
     def __init__(self, data_dir):
         self.data_dir = data_dir
-
+    
+    def __len__(self):
+        return len(os.listdir(self.data_dir))
+    
     def __getitem__(self, index):
         frame_path = os.path.join(self.data_dir, f'frame_{index}', 'frame_data.hdf5')
-        frame_file = h5py.File(frame_path)
+        frame_file = h5py.File(frame_path, 'r')
         
-        input1 = frame_file['input1']
-        input2 = frame_file['input2']
+        input_1 = frame_file['input1']
+        input_2 = frame_file['input2']
         target = frame_file['target']
 
         return torch.tensor(input_1).unsqueeze(0).float(), torch.tensor(input_2).unsqueeze(0).float(), torch.tensor(target).unsqueeze(0).float()

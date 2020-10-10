@@ -59,11 +59,12 @@ class ConvInverseBlock(nn.Module):
         self.in_channels = 16 * (2 ** int((depth - 1) / 2))
         self.out_channels = 16 * (2 ** int((depth - 2) / 2)) if depth != 1 else 1
         
-        upsample_size = original_input_size - 4 * (num_layers + depth - 6) + 2
+        upsample_size = original_input_size - 4 * (depth - 1) + 2
         
         self.upsample = nn.Upsample(
             size = upsample_size,
-            mode = 'nearest'
+            mode = 'trilinear',
+            align_corners = True
         )
         
         self.conv_r = nn.Conv3d(

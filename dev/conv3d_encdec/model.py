@@ -1,4 +1,4 @@
-import os
+import os, random
 import torch
 from torch import nn
 from torch import optim
@@ -25,6 +25,7 @@ class Subset(Dataset):
 
     def __getitem__(self, idx):
         return self.dataset[self.indices[idx]]
+#         return self.dataset[idx]
 
     def __len__(self):
         return len(self.indices)
@@ -33,8 +34,8 @@ class PlaceholderModel(pl.LightningModule):
 
     def __init__(self, hparams, data_path):
         super().__init__()
-        self.encoder = Encoder(5, F.relu)
-        self.decoder = Decoder(5, 72, F.relu)
+        self.encoder = Encoder(3, F.leaky_relu)
+        self.decoder = Decoder(3, 72, F.leaky_relu)
         self.criterion = nn.MSELoss()
 
         self.hparams = hparams
@@ -48,11 +49,22 @@ class PlaceholderModel(pl.LightningModule):
         train_length = int(0.7 * len(dataset))
         val_length = int(0.15 * len(dataset))
         test_length = len(dataset) - train_length - val_length
-#         self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
+        self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
         
-        self.train_dataset = Subset(dataset, list(range(0, train_length)))
-        self.val_dataset = Subset(dataset, list(range(train_length, train_length+val_length)))
-        self.test_dataset = Subset(dataset, list(range(train_length+val_length, len(dataset))))
+#         permuted_indices = list(range(len(dataset)))
+#         random.shuffle(permuted_indices)
+        
+#         train_indices = permuted_indices[0 : train_length]
+#         val_indices = permuted_indices[train_length : train_length + val_length]
+#         test_indices = permuted_indices[train_length + val_length : ]
+        
+#         self.train_dataset = Subset(dataset, list(range(0, train_length)))
+#         self.val_dataset = Subset(dataset, list(range(train_length, train_length+val_length)))
+#         self.test_dataset = Subset(dataset, list(range(train_length+val_length, len(dataset))))
+
+#         self.train_dataset = Subset(dataset, train_indices)
+#         self.val_dataset = Subset(dataset, val_indices)
+#         self.test_dataset = Subset(dataset, test_indices)
         
 #         print(len(self.train_dataset)), print(len(self.val_dataset)), print(len(self.test_dataset))
 
@@ -70,14 +82,14 @@ class PlaceholderModel(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+        return DataLoader(self.train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=4, pin_memory=False)
 #         return DataLoader(self.train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.hparams.batch_size, shuffle=False, num_workers=4, pin_memory=True)
+        return DataLoader(self.val_dataset, batch_size=self.hparams.batch_size, shuffle=False, num_workers=4, pin_memory=False)
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.hparams.batch_size, shuffle=False, num_workers=4, pin_memory=True)
+        return DataLoader(self.test_dataset, batch_size=self.hparams.batch_size, shuffle=False, num_workers=4, pin_memory=False)
     
     def forward(self, x1, x2):
         # in lightning, forward defines the prediction/inference actions

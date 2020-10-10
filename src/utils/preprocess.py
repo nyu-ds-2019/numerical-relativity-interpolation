@@ -15,6 +15,32 @@ def split_data(input_file_path, output_dir_path):
     target_np = np.array(file['Train']['target'])
 
     assert input_np.shape[0] == target_np.shape[0]
+    
+    x_mean = np.mean(
+        input_np, 
+        axis = tuple(range(input_np.ndim-3)), 
+        keepdims = True
+    )
+    
+    x_std = np.std(
+        input_np, 
+        axis = tuple(range(input_np.ndim-3)), 
+        keepdims = True
+    )
+    
+    scaled_input = np.divide(
+        input_np - x_mean, 
+        x_std, 
+        out = np.zeros_like(input_np), 
+        where = x_std !=0
+    )
+    
+    scaled_target = np.divide(
+        target_np - x_mean, 
+        x_std, 
+        out = np.zeros_like(target_np), 
+        where = x_std != 0
+    )
 
     num_frames = input_np.shape[0]
 
@@ -24,9 +50,9 @@ def split_data(input_file_path, output_dir_path):
         frame_path = os.path.join(frame_dir_path, 'frame_data.hdf5')
         create_dir(frame_dir_path)
 
-        input1 = input_np[i][0]
-        input2 = input_np[i][1]
-        target = target_np[i][0]
+        input1 = scaled_input[i][0]
+        input2 = scaled_input[i][1]
+        target = scaled_target[i][0]
 
         frame_hdf5 = h5py.File(frame_path, 'w')
         input1_ds = frame_hdf5.create_dataset('input1', data = input1)
@@ -38,5 +64,5 @@ def split_data(input_file_path, output_dir_path):
 if __name__ == '__main__':
     split_data(
         '/scratch/ns4486/numerical-relativity-interpolation/Proca_fiducial_scaled_cropped.hdf5',
-        '/scratch/ns4486/numerical-relativity-interpolation/Proca_fiducial_scaled_cropped'
+        '/scratch/ns4486/numerical-relativity-interpolation/Proca_fiducial_scaled_cropped_scaled'
     )
