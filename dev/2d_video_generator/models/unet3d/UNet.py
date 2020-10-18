@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from swish import Swish
-from conv import ConvBlock1D,narrow_like,ConvBlock3D,narrow_like3D
+from .swish import Swish
+from .conv import ConvBlock1D,narrow_like,ConvBlock3D,narrow_like3D
 
 class UNet1D(nn.Module):
     def __init__(self, in_channels, out_channels):
