@@ -6,9 +6,9 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split, Dataset
 from torchvision import transforms
 import pytorch_lightning as pl
-from loader import SingleChannelDataset
+from .loader import SingleChannelDataset
 
-from UNet import UNet3D
+from .UNet import UNet3D
 
 class Subset(Dataset):
     r"""

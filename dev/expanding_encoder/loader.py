@@ -30,7 +30,7 @@ class SingleChannelDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         input_1 = self.scaled_input[index, 0, :, :, :]
         input_2 = self.scaled_input[index, 1, :, :, :]
-        target = self.scaled_target[index, 0, 20:52, 20:52, 20:52]
+        target = self.scaled_target[index, 0, :, :, :]
 
         return torch.tensor(input_1).unsqueeze(0).float(), torch.tensor(input_2).unsqueeze(0).float(), torch.tensor(target).unsqueeze(0).float()
 

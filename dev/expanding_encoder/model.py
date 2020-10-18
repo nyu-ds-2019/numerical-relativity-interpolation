@@ -8,7 +8,8 @@ from torchvision import transforms
 import pytorch_lightning as pl
 from loader import SingleChannelDataset
 
-from UNet import UNet3D
+from expanding_encoder import Encoder
+from expanding_encoder import Decoder
 
 class Subset(Dataset):
     r"""
@@ -34,8 +35,8 @@ class PlaceholderModel(pl.LightningModule):
         super().__init__()
         self.hparams = hparams
         
-        self.model = UNet3D(2, 1)
-        
+        self.encoder = Encoder(self.hparams.num_layers, 72, F.relu)
+        self.decoder = Decoder(self.hparams.num_layers, F.relu)
         self.criterion = nn.L1Loss()
 
         self.data_path = data_path
@@ -79,18 +80,19 @@ class PlaceholderModel(pl.LightningModule):
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.hparams.batch_size, shuffle=False, num_workers=4, pin_memory=True)
     
-    def forward(self, x1):
+    def forward(self, x1, x2):
         # in lightning, forward defines the prediction/inference actions
-        y_hat = self.model(x1)
-        return y_hat
+        embedding1 = self.encoder(x1)
+        embedding2 = self.encoder(x2)
+        embedding = embedding1 + embedding2
+        return embedding
 
     def training_step(self, batch, batch_idx):
         # training_step defined the train loop. It is independent of forward
         x1, x2, y = batch
-        
-        new_x = torch.cat([x1, x2], dim=1)
 
-        y_hat = self(new_x)
+        z = self(x1, x2)
+        y_hat = self.decoder(z)
 
         loss = self.criterion(y_hat, y)
         # loss = F.mse_loss(y_hat, y)
@@ -117,15 +119,12 @@ class PlaceholderModel(pl.LightningModule):
         # OPTIONAL
 
         x1, x2, y = batch
-#         print(y.shape)
-        
-        new_x = torch.cat([x1, x2], dim=1)
 
-        y_hat = self(new_x)
+        z = self(x1, x2)
+        y_hat = self.decoder(z)
 
         # loss = self.criterion(y_hat, y)
-#         print(y_hat.shape)
-        loss = F.l1_loss(y_hat, y)
+        loss = F.mse_loss(y_hat, y)
         return {'val_loss': loss}
 
     def validation_epoch_end(self, outputs):
@@ -154,13 +153,12 @@ class PlaceholderModel(pl.LightningModule):
         # OPTIONAL
 
         x1, x2, y = batch
-        
-        new_x = torch.cat([x1, x2], dim=1)
 
-        y_hat = self(new_x)
+        z = self(x1, x2)
+        y_hat = self.decoder(z)
 
         # loss = self.criterion(y_hat, y)
-        loss = F.l1_loss(y_hat, y)
+        loss = F.mse_loss(y_hat, y)
         return {'test_loss': loss}
 
     def test_epoch_end(self, outputs):
