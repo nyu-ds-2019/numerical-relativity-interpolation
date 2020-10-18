@@ -34,8 +34,8 @@ class PlaceholderModel(pl.LightningModule):
 
     def __init__(self, hparams, data_path):
         super().__init__()
-        self.encoder = Encoder(3, F.leaky_relu)
-        self.decoder = Decoder(3, 72, F.leaky_relu)
+        self.encoder = Encoder(7, F.leaky_relu)
+        self.decoder = Decoder(7, 72, F.leaky_relu)
         self.criterion = nn.MSELoss()
 
         self.hparams = hparams
@@ -49,22 +49,22 @@ class PlaceholderModel(pl.LightningModule):
         train_length = int(0.7 * len(dataset))
         val_length = int(0.15 * len(dataset))
         test_length = len(dataset) - train_length - val_length
-        self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
+#         self.train_dataset, self.val_dataset, self.test_dataset = random_split(dataset, [train_length, val_length, test_length])
         
-#         permuted_indices = list(range(len(dataset)))
-#         random.shuffle(permuted_indices)
+        permuted_indices = list(range(len(dataset)))
+        random.shuffle(permuted_indices)
         
-#         train_indices = permuted_indices[0 : train_length]
-#         val_indices = permuted_indices[train_length : train_length + val_length]
-#         test_indices = permuted_indices[train_length + val_length : ]
+        train_indices = permuted_indices[0 : train_length]
+        val_indices = permuted_indices[train_length : train_length + val_length]
+        test_indices = permuted_indices[train_length + val_length : ]
         
 #         self.train_dataset = Subset(dataset, list(range(0, train_length)))
 #         self.val_dataset = Subset(dataset, list(range(train_length, train_length+val_length)))
 #         self.test_dataset = Subset(dataset, list(range(train_length+val_length, len(dataset))))
 
-#         self.train_dataset = Subset(dataset, train_indices)
-#         self.val_dataset = Subset(dataset, val_indices)
-#         self.test_dataset = Subset(dataset, test_indices)
+        self.train_dataset = Subset(dataset, train_indices)
+        self.val_dataset = Subset(dataset, val_indices)
+        self.test_dataset = Subset(dataset, test_indices)
         
 #         print(len(self.train_dataset)), print(len(self.val_dataset)), print(len(self.test_dataset))
 
