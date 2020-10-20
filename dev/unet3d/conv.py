@@ -29,15 +29,15 @@ class ConvBlock1D(nn.Module):
     def _get_layer(self, l):
         if l == 'U':
             in_channels, out_channels = self._setup_conv()
-            return nn.ConvTranspose1d(in_channels, out_channels, 2, stride=2)
+            return nn.ConvTranspose3d(in_channels, out_channels, 2, stride = 2, dilation = 3)
         elif l == 'D':
             in_channels, out_channels = self._setup_conv()
-            return nn.Conv1d(in_channels, out_channels, 2, stride=2)
+            return nn.Conv3d(in_channels, out_channels, 2, stride = 2, padding = 3)
         elif l == 'C':
             in_channels, out_channels = self._setup_conv()
-            return nn.Conv1d(in_channels, out_channels, self.kernel_size)
+            return nn.Conv3d(in_channels, out_channels, self.kernel_size)
         elif l == 'B':
-            return nn.BatchNorm1d(self.bn_channels)
+            return nn.BatchNorm3d(self.bn_channels)
         elif l == 'A':
             return Swish()
         else:
@@ -97,10 +97,10 @@ class ConvBlock3D(nn.Module):
     def _get_layer(self, l):
         if l == 'U':
             in_channels, out_channels = self._setup_conv()
-            return nn.ConvTranspose3d(in_channels, out_channels, 2, stride=2)
+            return nn.ConvTranspose3d(in_channels, out_channels, 2, stride = 2, dilation = 3)
         elif l == 'D':
             in_channels, out_channels = self._setup_conv()
-            return nn.Conv3d(in_channels, out_channels, 2, stride=2)
+            return nn.Conv3d(in_channels, out_channels, 2, stride = 2, padding = 3)
         elif l == 'C':
             in_channels, out_channels = self._setup_conv()
             return nn.Conv3d(in_channels, out_channels, self.kernel_size)

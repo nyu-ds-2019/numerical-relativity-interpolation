@@ -59,10 +59,12 @@ class PlaceholderModel(pl.LightningModule):
     def configure_optimizers(self):
         # REQUIRED
 
-        if self.hparams.lr_type == 'SGD':
+        if self.hparams.lr_type == 'sgd':
             optimizer = optim.SGD(self.parameters(), lr=self.hparams.lr)
-        elif self.hparams.lr_type == 'Adam':
+        elif self.hparams.lr_type == 'adam':
             optimizer = optim.Adam(self.parameters(), lr=self.hparams.lr)
+        elif self.hparams.lr_type == 'rmsprop':
+            optimizer = optim.RMSprop(self.parameters(), lr = self.hparams.lr)
         else:
             optimizer = optim.Adam(self.parameters(), lr=self.hparams.lr)
 
