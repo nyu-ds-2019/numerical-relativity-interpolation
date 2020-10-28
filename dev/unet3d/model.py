@@ -36,7 +36,8 @@ class PlaceholderModel(pl.LightningModule):
         
         self.model = UNet3D(2, 1)
         
-        self.criterion = nn.L1Loss()
+#         self.criterion = nn.L1Loss()
+        self.criterion = nn.SmoothL1Loss(reduction = 'mean')
 
         self.data_path = data_path
         
