@@ -11,7 +11,7 @@ class LinearBlock(nn.Module):
 		self.Act_3c = nn.ReLU()
 	def forward(self,x):
 		x = self.Linear(x)
-		x = self.Act(x)
+		x = self.Act_3c(x)
 		return x
 
 class ConvBlock(nn.Module):
@@ -25,7 +25,7 @@ class ConvBlock(nn.Module):
 	def forward(self,x):
 		x = self.Conv(x)
 		x = self.BatchNorm(x)
-		x = self.Act(x)
+		x = self.Act_3c(x)
 		return x
 
 class ResBlock(nn.Module):
