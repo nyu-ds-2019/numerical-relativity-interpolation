@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-from .models.meshfreeSR import meshfreeSR
+from models.meshfreeSR import meshfreeSR
 # from .models.meshfreeSR import UNet3D
 # from .models.ndInterp import NDLinearInterpolation
 
@@ -65,7 +65,7 @@ class SpaceTimeContext():
         train_loc = torch.cat(
             (torch.ones((self.N_SPACE_GRID ** 3, 1)).to(DEVICE) * self.TIME_MIN_T, self.space_grid.reshape(3,-1).T),
             axis = 1
-        )
+        ).to(DEVICE)
 
         # iterate over train times
         for i in np.linspace(self.TIME_MIN_T, self.TIME_MAX_T, num = n_train_time_grid):
@@ -114,7 +114,7 @@ class SpaceTimeContext():
 
 class GaussianMFSR():
     def __init__(self, spaceTimeContext, in_channels = 1, out_channels = 16, n_layers = 3, 
-                    n_dim = 4, linear_size = 256, num_epochs = 100, lr = 1e-3):
+                    n_dim = 4, linear_size = 256):
         self.spaceTimeContext = spaceTimeContext
         self.model = meshfreeSR(
             in_channels, 
@@ -124,16 +124,16 @@ class GaussianMFSR():
             linear_size
         ).to(DEVICE)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr = lr)
-        self.criterion = nn.MSELoss()
         self.train_loss_list = []
     
     # predict train_value from train_loc
-    def train(self):
-        self.model.train()
+    def train(self, num_epochs, lr = 1e-3):
+        optimizer = torch.optim.Adam(self.model.parameters(), lr = lr)
+        criterion = nn.MSELoss()
 
-        for i in range(self.num_epochs):
-            self.optimizer.zero_grad()
+        self.model.train()
+        for i in range(num_epochs):
+            optimizer.zero_grad()
             
             output = self.model(
                 self.spaceTimeContext.train_context, 
@@ -141,7 +141,7 @@ class GaussianMFSR():
                 T_SPACE_TIME_MIN, 
                 T_SPACE_TIME_MAX
             )
-            loss = self.criterion(
+            loss = criterion(
                 output.T[0],
                 self.spaceTimeContext.train_value
             )
@@ -150,7 +150,10 @@ class GaussianMFSR():
 
             self.train_loss_list.append(loss.item())
             loss.backward()
-            self.optimizer.step()
+            optimizer.step()
+        
+        print('---- Training complete ----')
+         
     
 
     def test(self, n_test_space_grid, n_test_time_grid,
@@ -159,16 +162,17 @@ class GaussianMFSR():
         
         train_context = self.spaceTimeContext.train_context
 
-        recon_axis = torch.linspace(space_min_x, space_max_x, n_test_space_grid).to(DEVICE)
-        recon_time = torch.linspace(time_min_t, time_max_t, n_test_time_grid).to(DEVICE)
+        recon_axis = torch.linspace(space_min_x, space_max_x, n_test_space_grid)
+        recon_time = torch.linspace(time_min_t, time_max_t, n_test_time_grid)
         recon_ngrid = recon_axis.shape[0]
         recon_step = recon_time.shape[0]
         
         recon_point = torch.stack(
             torch.meshgrid(recon_time, recon_axis, recon_axis, recon_axis)
         ).reshape(4, -1).T.to(DEVICE)
-
-        recon_result = self.model(train_context, recon_point, T_SPACE_TIME_MIN, T_SPACE_TIME_MAX)
+        
+        with torch.no_grad():
+            recon_result = self.model(train_context, recon_point, T_SPACE_TIME_MIN, T_SPACE_TIME_MAX)
         true_grid = torch.stack(torch.meshgrid(recon_axis, recon_axis, recon_axis))
 
         start_timestamp = recon_time[0].item()
@@ -182,6 +186,6 @@ class GaussianMFSR():
                 axis = 0
             )
         
-        print('Frobenius norm = ', torch.linalg.norm(recon_result - true_result).item())
+        print('Frobenius norm = ', torch.norm(recon_result.cpu() - true_result.cpu()).item())
         
         return recon_result, true_result
