@@ -7,7 +7,7 @@ class LinearBlock(nn.Module):
 	def __init__(self,in_channel,out_channel):
 		super(LinearBlock,self).__init__()
 		self.Linear = nn.Linear(in_channel,out_channel)
-#		self.Act = Swish()
+		self.Act = Swish()
 		self.Act_3c = nn.ReLU()
 	def forward(self,x):
 		x = self.Linear(x)
@@ -19,7 +19,7 @@ class ConvBlock(nn.Module):
 		super(ConvBlock,self).__init__()
 		self.Conv = nn.Conv3d(in_channel,out_channel,kernel_size,padding=kernel_size//2,padding_mode=padding_mode)
 		self.BatchNorm = nn.BatchNorm3d(out_channel)
-#		self.Act = Swish()
+		self.Act = Swish()
 		self.Act_3c = nn.ReLU()
 
 	def forward(self,x):
