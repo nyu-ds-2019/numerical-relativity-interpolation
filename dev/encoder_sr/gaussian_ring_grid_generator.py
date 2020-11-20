@@ -32,6 +32,6 @@ class GaussianRingSpaceTimeGrid():
             torch.meshgrid(self.time_axis, self.space_axis, self.space_axis, self.space_axis)
         ).to(DEVICE)
 
-        self.train_context = torch.stack(
+        self.values = torch.stack(
             [torch.tensor(GaussianRing(self.space_grid.cpu(), i, i/2)).unsqueeze(0) for i in self.time_axis]
         ).to(DEVICE)
