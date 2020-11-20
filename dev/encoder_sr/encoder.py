@@ -80,12 +80,19 @@ class SR(nn.Module):
         self.output_layer = nn.Sequential(nn.Linear(512*5 + 4*3,512), nn.ReLU(), nn.Linear(512, 1))
 
     def forward(self, context, vecs):
-        outputs = []
-        for i in range(context.shape[0]):
-#             print(context[i].shape)
-            outputs.append(self.contextEncoder(context[i].unsqueeze(0)))
-#         print(outputs[0].shape)
-        combine = torch.cat(outputs, dim=1)
+#         outputs = []
+#         for i in range(context.shape[0]):
+# #             print(context[i].shape)
+#             outputs.append(self.contextEncoder(context[i].unsqueeze(0)))
+# #         print(outputs[0].shape)
+#         combine = torch.cat(outputs, dim=1)
+#         print(combine.shape)
+        
+        combine = self.contextEncoder(context)
+        
+        combine = torch.cat([combine[i] for i in range(combine.shape[0])], dim = 0).unsqueeze(0)
+#         print(combine.shape)
+        
         
         outs = []
         for i in range(vecs.shape[0]):
