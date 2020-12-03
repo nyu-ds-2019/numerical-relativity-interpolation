@@ -224,3 +224,45 @@ class GaussianMFSR():
         df = pd.DataFrame(points, columns =['x', 'y', 'z', 'bool_predicted'])
 
         return df
+    
+    
+    def get_time_viz_df(self, recon_result, true_result, n_test_space_grid, n_test_time_grid,
+                space_min_x = -5, space_max_x = 5, time_min_t = 0.5, time_max_t = 2.5):
+
+        recon_axis = torch.linspace(space_min_x, space_max_x, n_test_space_grid)
+        recon_time = torch.linspace(time_min_t, time_max_t, n_test_time_grid)
+        
+        recon_point = torch.stack(
+            torch.meshgrid(recon_time, recon_axis, recon_axis, recon_axis)
+        ).reshape(4, -1).T.to(DEVICE)
+
+        space_index = int(n_test_space_grid / 2)
+        ret_df = None
+        
+        for time_index in range(n_test_time_grid):
+            with torch.no_grad():
+                gaussian_data = torch.cat((recon_point, true_result, recon_result), axis = 1)
+
+            time_slice = gaussian_data[recon_point[:, 0] == recon_time[time_index].item()][:, 1:]
+            time_z_slice = time_slice[time_slice[:, 0] == recon_axis[space_index].item()][:, 1:]
+
+            points = []
+
+            n = time_z_slice.shape[0]
+            for i in range(n):
+                x = time_z_slice[i, 0].item()
+                y = time_z_slice[i, 1].item()
+                actual_z = time_z_slice[i, 2].item()
+                predicted_z = time_z_slice[i, 3].item()
+
+                points.append((x, y, actual_z, 0, time_index))
+                points.append((x, y, predicted_z, 1, time_index))
+
+            df = pd.DataFrame(points, columns =['x', 'y', 'z', 'bool_predicted', 'time'])
+            
+            if ret_df is None:
+                ret_df = df
+            else:
+                ret_df = ret_df.append(df)
+
+        return ret_df
