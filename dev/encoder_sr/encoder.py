@@ -77,30 +77,30 @@ class SR(nn.Module):
     def __init__(self,in_channel,out_channel,n_layers):
         super(SR,self).__init__()
         self.contextEncoder = Encoder3D(in_channel,out_channel,n_layers)
-        self.output_layer = nn.Sequential(nn.Linear(512*5 + 4*3,512), nn.ReLU(), nn.Linear(512, 1))
+#         self.output_layer = nn.Sequential(nn.Linear(512*5 + 4,512), nn.ReLU(), nn.Linear(512, 1))
+        
+        self.linear1 = nn.Linear(512*5 + 4, 512*3)
+        self.relu1 = nn.ReLU()
+        self.linear2 = nn.Linear(512*3 + 4, 512)
+        self.relu2 = nn.ReLU()
+        self.linear3 = nn.Linear(512 + 4, 1)
 
-    def forward(self, context, vecs):
-#         outputs = []
-#         for i in range(context.shape[0]):
-# #             print(context[i].shape)
-#             outputs.append(self.contextEncoder(context[i].unsqueeze(0)))
-# #         print(outputs[0].shape)
-#         combine = torch.cat(outputs, dim=1)
-#         print(combine.shape)
+    def forward(self, context, locs):
         
-        combine = self.contextEncoder(context)
+        encodings = self.contextEncoder(context)
         
-        combine = torch.cat([combine[i] for i in range(combine.shape[0])], dim = 0).unsqueeze(0)
-#         print(combine.shape)
+        encodings_squashed = torch.cat([encodings[i] for i in range(encodings.shape[0])], dim = 0).unsqueeze(0).unsqueeze(0)
+        encodings_repeated = encodings_squashed.repeat(locs.shape[0], 1, 1)
         
+        encodings_and_coordinates = torch.cat([encodings_repeated, locs], dim=2)
         
-        outs = []
-        for i in range(vecs.shape[0]):
-            vec = vecs[i]
-            combine2 = torch.cat([combine, vec], dim=1)
-            combine2 = torch.cat([combine2, vec], dim=1)
-            combine2 = torch.cat([combine2, vec], dim=1)
-            output = self.output_layer(combine2)
-            outs.append(output)
-        output = torch.cat(outs, dim=0)
-        return output
+#         output = self.output_layer(encodings_and_coordinates).squeeze(1)
+        y = self.linear1(encodings_and_coordinates)
+        y = self.relu1(y)
+        y = torch.cat([y, locs], dim=2)
+        y = self.linear2(y)
+        y = self.relu2(y)
+        y = torch.cat([y, locs], dim=2)
+        y = self.linear3(y)
+        
+        return y.squeeze(1)
