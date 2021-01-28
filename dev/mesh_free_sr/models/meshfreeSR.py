@@ -78,7 +78,7 @@ class UNet3D(nn.Module):
 			y = self.Up_array[i](y)
 			y = torch.cat((y,temp_array[i]),1)
 		return y
-			
+
 class meshfreeSR(nn.Module):
 	def __init__(self,in_channel,out_channel,n_layers,ndim,linear_size=32):
 		super(meshfreeSR,self).__init__()
